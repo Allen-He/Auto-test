@@ -6,7 +6,8 @@ import xlwt
 import sys
 
 # packageName = input("plese input you packageName:\n")
-packageName = 'com.transsion.shopnc'
+# packageName = 'com.transsion.shopnc'
+packageName = 'com.duowan.gamevoice'
 
 
 def getPSS(package_name):

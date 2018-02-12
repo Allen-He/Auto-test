@@ -7,6 +7,7 @@ import time
 import datetime
 import re
 import codecs
+import xlwt
 
 '''
 返回cmd命令的输出值
@@ -200,17 +201,37 @@ def getAndroidInfo(interval,log_path,package_name,device_id):
     firstRun = True
 
     fileTime = getDate()
-    fileName = os.path.join(log_path,"_%s_%s_%s.csv") % (device_id,package_name,fileTime)
-
+    fileName = os.path.join(log_path,"_%s_%s_%s.xls") % (device_id,package_name,fileTime)
+    
     #appUid = getUid(device_id,appPid)
     cpuCores = getCpuCores(device_id)
 
     # codecs.open()打开文件可避免编码错误 'a' : 向一个文件追加内容,  不能使用 .read*()
-    with codecs.open(fileName,'a','utf-8') as f:
-        f.write(u'时间，上行流量(KB/S)，下行流量(KB/S)，应用CPU占比(%)，线程数，虚拟内存VSS(MB)，实际内存RSS(MB)，GPU()%，miedaseverCPU(%)\n')
+    # with codecs.open(fileName,'a','utf-8') as f:
+    #     f.write(u'时间，上行流量(KB/S)，下行流量(KB/S)，应用CPU占比(%)，线程数，虚拟内存VSS(MB)，实际内存RSS(MB)，GPU()%，miedaseverCPU(%)\n')
 
     title = "时间,上行流量(KB/s),下行流量(KB/s),应用cpu占比,线程数,虚拟内存vss(MB),实际内存rss(MB),GPU（%）,mediaserver (cpu%)"
     print title.replace(",","  ").decode("utf-8")
+
+    book = xlwt.Workbook(encoding='utf-8', style_compression=0)  # 创建新的工作簿
+    sheet_sdk = book.add_sheet('AndroidInfo', cell_overwrite_ok=True)  # 创建新的sheet
+    # sheet_sdk.write(0, 0, "时间")
+    # sheet_sdk.write(0, 1, "上行流量(KB/s)")
+    # sheet_sdk.write(0, 2, "下行流量(KB/s)")
+    # sheet_sdk.write(0, 3, "应用cpu占比")
+    # sheet_sdk.write(0, 4, "线程数")
+    # sheet_sdk.write(0, 5, "虚拟内存vss(MB)")
+    # sheet_sdk.write(0, 6, "实际内存rss(MB)")
+    # sheet_sdk.write(0, 7, "GPU(%)")
+    # sheet_sdk.write(0, 8, "mediaserver(cpu%)")
+
+    title_list = title.split(",")
+    for x in range(len(title_list)):
+        sheet_sdk.write(0, x, title_list[x])
+        sheet_sdk.col(x).width = 4000
+    row = 1
+    
+ 
 
     #循环开始
     while True:
@@ -233,11 +254,17 @@ def getAndroidInfo(interval,log_path,package_name,device_id):
         str_now_time = getDate()
         write_str = "%s,%s,%s,%s,%s,%s,%s,%s,%s\n" % (str_now_time, upflow, downflow, cpu, thr, round(float(vss) / 1024, 2),round(float(rss) / 1024, 2), gpu, mediaserver);
         print write_str.replace(",", "  ")
-        with codecs.open(fileName, 'a', 'utf-8') as f:
-            f.write(write_str)
 
+        col = 0
+        write_list = write_str.split(",")
+        for x in write_list:
+            sheet_sdk.write(row, col, x)
+            col += 1
+
+        row += 1
 
         time.sleep(float(interval))
+        book.save(r'' + os.path.join(sys.path[0],fileName))
 
 
 if __name__ == "__main__":
